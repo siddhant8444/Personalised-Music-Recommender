@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siddhant's Music</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0a0f; color: #e0e0e0;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    padding: 48px 32px 36px; text-align: center;
+    border-bottom: 1px solid #2a2a4a;
+  }
+  .hero h1 { font-size: 36px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+  .hero p { color: #8899aa; margin-top: 8px; font-size: 15px; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .hero .updated { color: #556677; font-size: 12px; margin-top: 12px; }
+  .hero-controls {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin-top: 16px; flex-wrap: wrap;
+  }
+  .hero-controls input {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid #2a2a4a;
+    background: #1a1a2a; color: #e0e0e0; font-size: 14px; outline: none; width: 240px; max-width: 100%;
+  }
+  .hero-controls input:focus { border-color: #4a9eff; }
+  .hero-controls button {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid #2a2a4a;
+    background: #1a1a2a; color: #8899aa; font-size: 12px; cursor: pointer;
+  }
+  .hero-controls button:hover { border-color: #4a2a6a; color: #fff; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px; }
+  .section { margin-bottom: 40px; }
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+  }
+  .section-header h2 {
+    font-size: 20px; font-weight: 600; color: #fff;
+  }
+  .section-header .count { font-size: 13px; color: #556677; font-weight: 400; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+  .card {
+    background: #14141f; border-radius: 12px; border: 1px solid #2a2a3a;
+    overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; position: relative;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.5); border-color: #4a2a6a; }
+  .card-img {
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    background: linear-gradient(135deg, #2a2a4a, #1a1a2e);
+  }
+  .card-body { padding: 12px 14px; }
+  .card-body h3 { font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-body .tag { font-size: 11px; color: #4a9eff; margin-top: 2px; }
+  .card-body .song { font-size: 12px; color: #6fcf97; margin-top: 4px; }
+  .card-body .match { font-size: 11px; color: #6fcf97; margin-top: 4px; }
+  .card-add {
+    position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
+    border-radius: 50%; border: none; background: rgba(0,0,0,0.6);
+    color: #4a9eff; font-size: 18px; line-height: 1; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+  }
+  .card-add:hover { background: #4a9eff; color: #fff; }
+  .card:hover .card-add { display: flex; }
+  .genre-block { margin-bottom: 28px; }
+  .genre-title {
+    font-size: 15px; font-weight: 600; color: #4a9eff; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .genre-title::before {
+    content: ''; width: 3px; height: 14px; background: #4a9eff; border-radius: 2px;
+  }
+  .mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .loading { text-align: center; padding: 80px; color: #556677; font-size: 15px; }
+  .empty {
+    text-align: center; padding: 80px;
+  }
+  .empty h2 { font-size: 24px; color: #556677; font-weight: 500; }
+  .empty p { color: #445566; margin-top: 8px; font-size: 14px; }
+  .admin-section {
+    border-top: 1px solid #1a1a2a; margin-top: 32px; padding-top: 24px;
+  }
+  .admin-panel {
+    max-width: 520px; margin: 0 auto;
+    padding: 20px; background: #14141f; border-radius: 12px; border: 1px solid #2a2a3a;
+  }
+  .admin-panel h3 { font-size: 14px; color: #fff; margin-bottom: 12px; }
+  .admin-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .field-wrap { position: relative; flex: 1; min-width: 100px; }
+  .field-wrap input {
+    width: 100%; padding: 8px 12px; border-radius: 6px;
+    border: 1px solid #2a2a3a; background: #1a1a2a; color: #e0e0e0; font-size: 13px; outline: none;
+  }
+  .field-wrap input:focus { border-color: #4a9eff; }
+  .autocomplete {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+    background: #1a1a2a; border: 1px solid #2a2a4a; border-top: none;
+    border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; display: none;
+  }
+  .autocomplete.open { display: block; }
+  .autocomplete-item {
+    padding: 8px 12px; cursor: pointer; font-size: 12px; color: #c0c0d0;
+    border-bottom: 1px solid #22223a;
+  }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover, .autocomplete-item.highlighted { background: #2a2a4a; color: #fff; }
+  .autocomplete-item .sub { font-size: 11px; color: #556677; }
+  .admin-row button {
+    padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600;
+  }
+  .btn-primary { background: linear-gradient(135deg, #4a9eff, #6c5ce7); color: #fff; }
+  .btn-secondary { background: #2a2a4a; color: #aabbcc; }
+  .btn-danger { background: #3a1a1a; color: #e17055; }
+  .fav-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .fav-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    background: #1a3a2a; border: 1px solid #2a5a3a; color: #6fcf97;
+  }
+  .fav-tag .remove {
+    cursor: pointer; color: #e17055; font-weight: 700; font-size: 14px; line-height: 1;
+  }
+  .fav-tag .remove:hover { color: #ff6b6b; }
+  .fav-tag .song-label { color: #889; font-size: 11px; margin-left: 4px; }
+  .status { font-size: 12px; color: #6fcf97; margin-top: 4px; }
+  .hidden { display: none; }
+  .toast-container {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    animation: slideIn 0.3s ease; max-width: 280px;
+  }
+  .toast.success { background: #1a3a2a; border: 1px solid #2a5a3a; color: #6fcf97; }
+  .toast.error { background: #3a1a1a; border: 1px solid #5a2a2a; color: #e17055; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Siddhant's Music</h1>
+  <p>Artists I love and recommendations based on my taste</p>
+  <div class="hero-controls">
+    <input type="text" id="searchInput" placeholder="Filter artists or genres..." oninput="filterPage()">
+    <button id="shareBtn" onclick="sharePage()">🔗 Share</button>
+  </div>
+  <div class="updated" id="updatedText">Loading...</div>
+</div>
+
+<div class="container">
+  <div id="mainContent">
+    <div class="loading">Loading...</div>
+  </div>
+
+  <div class="admin-section" id="adminSection" style="display:none">
+    <div class="admin-panel">
+      <h3>My Artists</h3>
+      <div class="admin-row">
+        <div class="field-wrap">
+          <input type="text" id="addArtistInput" placeholder="Artist name" autocomplete="off">
+          <div class="autocomplete" id="artistAutocomplete"></div>
+        </div>
+        <div class="field-wrap">
+          <input type="text" id="addGenreInput" placeholder="Genre" autocomplete="off">
+          <div class="autocomplete" id="genreAutocomplete"></div>
+        </div>
+        <div class="field-wrap">
+          <input type="text" id="addSongInput" placeholder="Favorite song" autocomplete="off">
+          <div class="autocomplete" id="songAutocomplete"></div>
+        </div>
+        <button id="addArtistBtn" class="btn-primary">+</button>
+      </div>
+      <div class="fav-tags" id="favTags"></div>
+      <div style="display:flex;gap:8px">
+        <button id="saveProfileBtn" class="btn-secondary">Save</button>
+        <button id="clearProfileBtn" class="btn-danger">Clear All</button>
+      </div>
+      <div class="status" id="adminStatus"></div>
+      <div style="margin-top:10px;font-size:11px;color:#445">
+        Tip: Start typing — suggestions appear automatically
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API = '/api/v1';
+const ADMIN_KEY = 'siddhant';
+const isAdmin = new URLSearchParams(window.location.search).get('admin') === ADMIN_KEY;
+
+const GENRES = [
+  "Electronic", "House", "Techno", "Trance", "Dubstep", "Drum and Bass",
+  "Synthwave", "Ambient", "Downtempo", "IDM", "Progressive House",
+  "Deep House", "Tech House", "Minimal", "Electro", "Breakbeat",
+  "Future Bass", "Folktronica", "Indie Electronic", "Experimental",
+  "Modern Classical", "Film Score", "Pop", "Rock", "Hip Hop", "R&B",
+  "Jazz", "Classical", "Lo-Fi", "Shoegaze", "Post-Rock",
+  "French Touch", "Big Beat", "Darkwave", "Electronic Dance Music",
+  "House Music", "Electronic/Pop",
+];
+
+let favorites = [];
+let pageData = null;
+let filterText = '';
+
+const mainContent = document.getElementById('mainContent');
+const adminSection = document.getElementById('adminSection');
+const addInput = document.getElementById('addArtistInput');
+const genreInput = document.getElementById('addGenreInput');
+const songInput = document.getElementById('addSongInput');
+const addBtn = document.getElementById('addArtistBtn');
+const favTags = document.getElementById('favTags');
+const saveBtn = document.getElementById('saveProfileBtn');
+const clearBtn = document.getElementById('clearProfileBtn');
+const adminStatus = document.getElementById('adminStatus');
+const updatedText = document.getElementById('updatedText');
+const searchInput = document.getElementById('searchInput');
+
+// --- Autocomplete ---
+
+function setupAutocomplete(inputEl, dropdownEl, fetchFn, onSelect, minLen = 2) {
+  let currentIndex = -1;
+  let currentResults = [];
+  let debounceTimer = null;
+
+  function close() {
+    dropdownEl.classList.remove('open');
+    dropdownEl.innerHTML = '';
+    currentIndex = -1;
+    currentResults = [];
+  }
+
+  function render(items) {
+    currentResults = items;
+    if (items.length === 0) {
+      close();
+      return;
+    }
+    dropdownEl.innerHTML = items.map((item, i) =>
+      `<div class="autocomplete-item${i === 0 ? ' highlighted' : ''}" data-index="${i}">
+        ${item.label}
+        ${item.sub ? `<div class="sub">${item.sub}</div>` : ''}
+      </div>`
+    ).join('');
+    dropdownEl.classList.add('open');
+    currentIndex = 0;
+  }
+
+  function select(index) {
+    const item = currentResults[index];
+    if (item && onSelect(item)) {
+      inputEl.value = item.inputValue || item.label;
+      close();
+    }
+  }
+
+  dropdownEl.addEventListener('click', (e) => {
+    const div = e.target.closest('.autocomplete-item');
+    if (!div) return;
+    select(parseInt(div.dataset.index));
+  });
+
+  dropdownEl.addEventListener('mouseover', (e) => {
+    const div = e.target.closest('.autocomplete-item');
+    if (!div) return;
+    dropdownEl.querySelectorAll('.autocomplete-item').forEach(el => el.classList.remove('highlighted'));
+    div.classList.add('highlighted');
+    currentIndex = parseInt(div.dataset.index);
+  });
+
+  inputEl.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    const val = inputEl.value.trim();
+    if (val.length < minLen) {
+      close();
+      return;
+    }
+    debounceTimer = setTimeout(async () => {
+      try {
+        const items = await fetchFn(val);
+        render(items);
+      } catch (e) {
+        close();
+      }
+    }, 250);
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (!dropdownEl.classList.contains('open')) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      currentIndex = Math.min(currentIndex + 1, currentResults.length - 1);
+      highlightCurrent();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      currentIndex = Math.max(currentIndex - 1, 0);
+      highlightCurrent();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (currentIndex >= 0) select(currentIndex);
+    } else if (e.key === 'Escape') {
+      close();
+    }
+  });
+
+  function highlightCurrent() {
+    dropdownEl.querySelectorAll('.autocomplete-item').forEach(el => el.classList.remove('highlighted'));
+    const el = dropdownEl.querySelector(`.autocomplete-item[data-index="${currentIndex}"]`);
+    if (el) {
+      el.classList.add('highlighted');
+      el.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!inputEl.contains(e.target) && !dropdownEl.contains(e.target)) {
+      close();
+    }
+  });
+
+  return { close };
+}
+
+// Artist autocomplete
+setupAutocomplete(addInput, document.getElementById('artistAutocomplete'), async (q) => {
+  const resp = await fetch(`${API}/artists/search?q=${encodeURIComponent(q)}`);
+  const data = await resp.json();
+  return (data.results || []).map(a => ({
+    label: a.name,
+    sub: a.spotify_id ? 'Spotify artist' : '',
+    inputValue: a.name,
+    value: a,
+  }));
+}, (item) => {
+  addInput.value = item.value.name;
+  genreInput.focus();
+  return true;
+});
+
+// Genre autocomplete
+setupAutocomplete(genreInput, document.getElementById('genreAutocomplete'), async (q) => {
+  const lower = q.toLowerCase();
+  return GENRES
+    .filter(g => g.toLowerCase().includes(lower))
+    .slice(0, 10)
+    .map(g => ({
+      label: g,
+      inputValue: g,
+      value: g,
+    }));
+}, (item) => {
+  genreInput.value = item.value;
+  songInput.focus();
+  return true;
+});
+
+// Song autocomplete
+setupAutocomplete(songInput, document.getElementById('songAutocomplete'), async (q) => {
+  const artist = addInput.value.trim();
+  const query = artist ? `${q} ${artist}` : q;
+  const resp = await fetch(`${API}/songs/search?q=${encodeURIComponent(query)}`);
+  const data = await resp.json();
+  return (data.results || []).slice(0, 8).map(t => ({
+    label: t.name,
+    sub: t.artist,
+    inputValue: t.name,
+    value: t,
+  }));
+}, (item) => {
+  songInput.value = item.value.name;
+  songInput.dataset.trackId = item.value.spotify_id || '';
+  return true;
+});
+
+// --- Admin controls ---
+
+if (isAdmin) {
+  adminSection.style.display = 'block';
+}
+
+async function saveFavorites() {
+  if (favorites.length === 0) return;
+  try {
+    await fetch(`${API}/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ artists: favorites.map(a => ({ artist: a.artist, genre: a.genre || '', song: a.song || '', track_id: a.track_id || '' })) }),
+    });
+    for (const a of favorites) {
+      if (a.genre) {
+        await fetch(`${API}/artists`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: a.artist, genre: a.genre }),
+        }).catch(() => {});
+      }
+    }
+    showToast('Saved!', 'success');
+    loadPage();
+  } catch (e) { showToast('Error saving', 'error'); }
+}
+
+addBtn.addEventListener('click', async () => {
+  const name = addInput.value.trim();
+  const genre = genreInput.value.trim() || 'Unknown';
+  const song = songInput.value.trim();
+  const track_id = songInput.dataset.trackId || '';
+  if (!name) return;
+  if (!favorites.some(a => a.artist === name)) {
+    favorites.push({ artist: name, genre, song, track_id });
+    renderFavTags();
+  }
+  addInput.value = '';
+  genreInput.value = '';
+  songInput.value = '';
+  songInput.dataset.trackId = '';
+  addInput.focus();
+  await saveFavorites();
+});
+
+addInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('artistAutocomplete').classList.contains('open')) addBtn.click(); });
+genreInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('genreAutocomplete').classList.contains('open')) addBtn.click(); });
+songInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('songAutocomplete').classList.contains('open')) addBtn.click(); });
+
+function renderFavTags() {
+  favTags.innerHTML = favorites.map(a =>
+    `<span class="fav-tag">${a.artist}${a.song ? ` <span class="song-label">🎵 ${a.song}</span>` : ''} <span class="remove" data-artist="${a.artist}">&times;</span></span>`
+  ).join('');
+  favTags.querySelectorAll('.remove').forEach(el => {
+    el.addEventListener('click', async () => {
+      favorites = favorites.filter(f => f.artist !== el.dataset.artist);
+      renderFavTags();
+      await saveFavorites();
+    });
+  });
+}
+
+saveBtn.addEventListener('click', saveFavorites);
+
+clearBtn.addEventListener('click', async () => {
+  favorites = [];
+  renderFavTags();
+  await fetch(`${API}/profile`, { method: 'DELETE' }).catch(() => {});
+  showToast('Cleared all artists', 'success');
+  loadPage();
+});
+
+function spotifyUrl(artist) {
+  if (artist.track_id) {
+    return `https://open.spotify.com/track/${artist.track_id}`;
+  }
+  if (artist.song && artist.artist) {
+    return `https://open.spotify.com/search/${encodeURIComponent(artist.song + ' ' + artist.artist)}`;
+  }
+  if (artist.spotify_id) {
+    return `https://open.spotify.com/artist/${artist.spotify_id}`;
+  }
+  return `https://open.spotify.com/search/${encodeURIComponent(artist.artist || artist)}`;
+}
+
+async function addRecommendedToProfile(artist, genre) {
+  if (!isAdmin) return;
+  if (favorites.some(a => a.artist === artist)) return;
+  favorites.push({ artist, genre: genre || 'Unknown', song: '' });
+  renderFavTags();
+  try {
+    await fetch(`${API}/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ artists: favorites.map(a => ({ artist: a.artist, genre: a.genre || '', song: a.song || '' })) }),
+    });
+    await fetch(`${API}/artists`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: artist, genre: genre || 'Unknown' }),
+    }).catch(() => {});
+    showToast(`Added ${artist}!`, 'success');
+    loadPage();
+  } catch (e) { showToast('Error adding artist', 'error'); }
+}
+
+async function loadPage() {
+  mainContent.innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const data = await apiGet('/recommend/by-genre?n=8');
+    pageData = data;
+    renderPage(data);
+    updatedText.textContent = `Updated just now`;
+  } catch (e) {
+    mainContent.innerHTML = `<div class="empty"><h2>Couldn't load</h2><p>${e.message}</p></div>`;
+  }
+}
+
+function filterPage() {
+  filterText = searchInput.value.toLowerCase().trim();
+  if (pageData) renderPage(pageData);
+}
+
+function matchesFilter(text) {
+  if (!filterText) return true;
+  return text.toLowerCase().includes(filterText);
+}
+
+function renderPage(data) {
+  const profile = data.profile_artists || [];
+  const recs = data.recommendations || {};
+
+  if (profile.length === 0) {
+    mainContent.innerHTML = `<div class="empty"><h2>Coming soon</h2><p>Artists will appear here once added</p></div>`;
+    return;
+  }
+
+  let html = '';
+
+  const filteredProfile = filterText
+    ? profile.filter(a => matchesFilter(a.artist) || matchesFilter(a.genre))
+    : profile;
+
+  if (filteredProfile.length > 0) {
+    html += `<div class="section">
+      <div class="section-header">
+        <h2>My Artists</h2>
+        <span class="count">${filteredProfile.length} artist${filteredProfile.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="grid">`;
+    filteredProfile.forEach(a => {
+      html += `<div class="card" onclick="window.open('${spotifyUrl(a)}', '_blank')">
+        <img class="card-img" src="${a.image_url || ''}" alt="${a.artist}"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%232a2a4a%22 width=%22100%22 height=%22100%22/><text fill=%22%23556677%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2212%22>${a.artist[0]}</text></svg>'">
+        <div class="card-body">
+          <h3>${a.artist}</h3>
+          <div class="tag">${a.genre}</div>
+          ${a.song ? `<div class="song">🎵 ${a.song}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Recommendations by genre (visitors only)
+  const entries = !isAdmin ? Object.entries(recs) : [];
+  let hasVisibleRecs = false;
+
+  if (entries.length > 0) {
+    html += `<div class="section">
+      <div class="section-header"><h2>You Might Also Like</h2></div>`;
+    entries.forEach(([genre, artists]) => {
+      const filteredArtists = filterText
+        ? artists.filter(r => matchesFilter(r.artist) || matchesFilter(r.genre))
+        : artists;
+      if (filteredArtists.length === 0) return;
+      hasVisibleRecs = true;
+      html += `<div class="genre-block">
+        <div class="genre-title">${genre}</div>
+        <div class="mini-grid">`;
+      filteredArtists.forEach(r => {
+        html += `<div class="card" onclick="window.open('${spotifyUrl(r)}', '_blank')">
+          ${isAdmin ? `<button class="card-add" onclick="event.stopPropagation(); addRecommendedToProfile('${r.artist.replace(/'/g, "\\'")}', '${r.genre.replace(/'/g, "\\'")}')">+</button>` : ''}
+          <img class="card-img" src="${r.image_url || ''}" alt="${r.artist}"
+            onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%232a2a4a%22 width=%22100%22 height=%22100%22/><text fill=%22%23556677%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2212%22>${r.artist[0]}</text></svg>'">
+          <div class="card-body">
+            <h3>${r.artist}</h3>
+            <div class="tag">${r.genre}</div>
+            <div class="match">${(r.content_score * 100).toFixed(0)}% match</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (!hasVisibleRecs && filterText && filteredProfile.length === 0) {
+    mainContent.innerHTML = `<div class="empty"><h2>No results</h2><p>Nothing matches "${filterText}"</p></div>`;
+    return;
+  }
+
+  mainContent.innerHTML = html;
+}
+
+async function apiGet(path) {
+  const resp = await fetch(`${API}${path}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return resp.json();
+}
+
+function sharePage() {
+  const url = window.location.origin;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('shareBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => {
+    prompt('Copy this URL:', url);
+  });
+}
+
+function showToast(msg, type) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }, 2000);
+}
+
+async function init() {
+  if (isAdmin) {
+    try {
+      const data = await apiGet('/profile');
+      if (data.artists && data.artists.length > 0) {
+        favorites = data.artists.map(a => ({ artist: a.artist, genre: a.genre || '', song: a.song || '', track_id: a.track_id || '' }));
+        renderFavTags();
+      }
+    } catch (e) {}
+  }
+  loadPage();
+}
+
+init();
+</script>
+</body>
+</html>

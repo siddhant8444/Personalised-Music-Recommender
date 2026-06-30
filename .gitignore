@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+data/profile.json
+data/artist_cache.json
+.DS_Store
+.cache
