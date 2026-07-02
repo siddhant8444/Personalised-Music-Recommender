@@ -13,6 +13,7 @@ from starlette.types import ASGIApp
 class NoCacheMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response: Response = await call_next(request)
+        response.headers["ngrok-skip-browser-warning"] = "true"
         if request.url.path == "/" or request.url.path.endswith(".html"):
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
             response.headers["Pragma"] = "no-cache"
